@@ -1,5 +1,5 @@
 /* Complete styles.css (your original file with added emoji fallback for flags,
-   scrollbar-gutter and light/dark theme variables for the theme toggle) */
+   scrollbar-gutter, light/dark theme variables and back-to-top styles) */
 
 /* Root variables (dark defaults) */
 :root{
@@ -27,10 +27,10 @@
 html[data-theme="light"] {
   --bg-0: #f6f8fb;
   --bg-1: #ffffff;
-  --muted: #4b5563;         /* darker muted for light background */
-  --text: #071029;          /* near-black text */
-  --accent-1: #0ea5a4;      /* teal-ish */
-  --accent-2: #f59e0b;      /* amber-ish */
+  --muted: #4b5563;
+  --text: #071029;
+  --accent-1: #0ea5a4;
+  --accent-2: #f59e0b;
   --shadow: 0 6px 18px rgba(10,10,12,0.06), inset 0 1px 0 rgba(0,0,0,0.02);
   --success: #059669;
 }
@@ -54,7 +54,7 @@ body{
   font-size: clamp(14px, 1.2vw + 10px, 16px);
   -webkit-text-size-adjust:100%;
 
-  /* ensure content never sits beneath footer: footer height + extra gap + safe-area */
+  /* ensure content never sits beneath footer */
   padding-bottom: calc(var(--footer-height) + var(--footer-gap) + env(safe-area-inset-bottom, 0px));
 }
 
@@ -621,6 +621,64 @@ button.btn.copy-icon.copied-temp{
 }
 
 /* ----------------------
+   BACK-TO-TOP BUTTON
+   ---------------------- */
+.back-to-top{
+  position: fixed;
+  right: 18px;
+  bottom: calc(var(--footer-height) + 18px); /* sits above the footer */
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  color: #021018;
+  border: none;
+  box-shadow: 0 8px 22px rgba(2,6,23,0.35);
+  cursor: pointer;
+  transform: translateY(8px) scale(0.98);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s cubic-bezier(.2,.9,.3,1), box-shadow .12s ease;
+  z-index: 120;
+}
+.back-to-top svg { width: 18px; height: 18px; display:block; }
+.back-to-top:hover { transform: translateY(0) scale(1); box-shadow: 0 12px 30px rgba(2,6,23,0.42); }
+
+/* visible state */
+.back-to-top.visible{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* focus styles */
+.back-to-top:focus-visible{
+  outline: 3px solid rgba(6,182,212,0.16);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+/* Respect light theme */
+:root[data-theme="light"] .back-to-top{
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  color: #021018;
+  box-shadow: 0 8px 20px rgba(3,8,20,0.08);
+}
+
+/* mobile adjust (avoid safe area overlap) */
+@media (max-width: 520px){
+  .back-to-top {
+    right: 14px;
+    bottom: calc(var(--footer-height) + 12px);
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* ----------------------
    EMOJI / FLAG FALLBACK
    ---------------------- */
 /* Force emoji fallback fonts for flag characters so color emoji render reliably */
@@ -628,7 +686,6 @@ button.btn.copy-icon.copied-temp{
 .modal-char.flag {
   font-family: Inter, system-ui, -apple-system, "Segoe UI", "Poppins",
                "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "EmojiOne Color", sans-serif;
-  /* Slightly larger size for flags so details are visible */
   font-size: clamp(28px, 6.4vw, 64px);
   letter-spacing: normal;
   line-height: 1;
