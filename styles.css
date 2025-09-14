@@ -1,4 +1,4 @@
-/* Complete styles.css (your original file with added emoji fallback for flags) */
+/* Complete styles.css (your original file with added emoji fallback for flags and scrollbar-gutter) */
 
 /* Root variables */
 :root{
@@ -18,9 +18,15 @@
   /* footer sizing + spacing between content and footer */
   --footer-height: clamp(48px, 7vh, 64px);
   --footer-gap: 28px;
+  --scrollbar-space: 0px;
 }
 
 /* Base */
+/* Reserve gutter for scrollbar to prevent layout shift when page length changes */
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll; /* fallback: reserve space for vertical scrollbar */
+}
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body{
@@ -65,6 +71,8 @@ body{
   backdrop-filter: blur(6px);
   z-index: 20;
   border-bottom: 1px solid rgba(255,255,255,0.02);
+  /* compensate for potential scrollbar-space if needed */
+  padding-right: var(--scrollbar-space, 0px);
 }
 .header-inner{
   display:flex;
