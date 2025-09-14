@@ -1,5 +1,4 @@
-
-// script.js — volledige versie met flag-generator en robuuste clipboard fallback
+// script.js — volledige versie met flag-generator, robust clipboard fallback, toast, and small scrollbar-space fallback
 
 // Helper to build a flag emoji from an ISO 3166-1 alpha-2 country code
 function countryFlagEmoji(code){
@@ -676,7 +675,21 @@ function debounce(fn, ms){
   return (...args)=>{ clearTimeout(t); t = setTimeout(()=> fn(...args), ms); }
 }
 
+// Optional JS fallback: measure scrollbar width and expose as CSS var
+(function preserveScrollbarSpace(){
+  function getScrollbarWidth(){
+    return window.innerWidth - document.documentElement.clientWidth;
+  }
+  function applyScrollSpace(){
+    const w = getScrollbarWidth();
+    // only set when > 0 (desktop scenarios)
+    document.documentElement.style.setProperty('--scrollbar-space', (w > 0 ? w + 'px' : '0px'));
+  }
+  window.addEventListener('resize', applyScrollSpace);
+  // run once at start
+  applyScrollSpace();
+})();
+
 // Init
 renderCategories();
 filterAndRender();
-
