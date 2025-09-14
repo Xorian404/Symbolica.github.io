@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Symbolica — symbols</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Poppins:wght@600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <a class="logo" href="#" id="site-name" aria-label="Site: Symbolica Liquid">Symbolica</a>
+
+      <div class="search-wrap" aria-hidden="false">
+        <label for="search" class="visually-hidden">Search symbols</label>
+        <input id="search" type="search" placeholder="Search" autocomplete="off" />
+      </div>
+    </div>
+
+    <nav class="category-bar" id="categories" aria-label="Categories"></nav>
+  </header>
+
+  <main class="container" id="main" role="main">
+    <section class="controls">
+      <div id="counts" class="counts">Loading symbols…</div>
+      <div class="help">Click a symbol to copy or open preview</div>
+    </section>
+
+    <section id="grid" class="grid" aria-live="polite" aria-label="Symbol results">
+      <!-- symbol cards injected here -->
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo" aria-label="Site footer">
+    <div class="footer-inner container">
+      <div>Made with ❤️ by Xorian &nbsp;|&nbsp; Free to use symbols</div>
+    </div>
+  </footer>
+
+  <!-- modal for preview -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-overlay" role="presentation"></div>
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      <div class="modal-body">
+        <div class="modal-char" id="modal-char" aria-hidden="true">?</div>
+        <div class="modal-meta">
+          <h2 id="modal-title">Preview</h2>
+          <p id="modal-name" class="modal-name"></p>
+          <div class="modal-actions">
+            <!-- Copy icon (same style as card copy icon) -->
+            <button id="modal-copy-icon" class="btn modal-icon" title="Copy" aria-label="Copy symbol"></button>
+
+            <!-- Download icon -->
+            <button id="modal-download-icon" class="btn modal-icon" title="Download PNG" aria-label="Download PNG"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
