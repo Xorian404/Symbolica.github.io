@@ -1,9 +1,4 @@
-/* Complete styles.css (updated modal sizing to be smaller & consistent across devices)
-   - Compact cards, responsive grid, fixed footer
-   - Modal preview box reduced in size so it fits nicely on iPhone 7, iPhone 14 Pro Max, etc.
-   - Includes .scroll-wrap wrapper support for scrollable modal content on very small screens
-   - Accessibility: reduced-motion, focus-visible, prefers-contrast support
-*/
+/* Complete styles.css (your original file with added emoji fallback for flags) */
 
 /* Root variables */
 :root{
@@ -338,7 +333,6 @@ button.btn.copy-icon.copied-temp{
   background: linear-gradient(180deg,#071229,#071226);
   border-radius: 12px;
   padding: 14px;
-  /* reduced max-width so modal doesn't appear huge on wide phones or large displays */
   max-width: min(540px, calc(100% - 36px));
   width: 100%;
   max-height: calc(100vh - 72px);
@@ -369,7 +363,6 @@ button.btn.copy-icon.copied-temp{
 /* Preview square: much smaller upper limit and tighter clamping */
 .modal-char{
   aspect-ratio: 1 / 1;
-  /* make the box smaller than before so it fits well on iPhone 7 and also doesn't look huge on large phones */
   width: clamp(72px, 16vw, 140px);
   min-width: 72px;
   max-width: 160px;
@@ -379,12 +372,10 @@ button.btn.copy-icon.copied-temp{
   border-radius: 10px;
   background: rgba(255,255,255,0.02);
   color: var(--text);
-  /* smaller font-size clamp so symbol remains proportional */
   font-size: clamp(28px, 7.5vw, 64px);
   line-height: 1;
   padding: 8px;
   flex: 0 0 auto;
-  /* static symbol, no animation */
 }
 
 /* Metadata column */
@@ -479,7 +470,6 @@ button.btn.copy-icon.copied-temp{
     width: 100%;
   }
 
-  /* ensure preview box remains compact on phones */
   .modal-char{
     width: clamp(72px, 28vw, 120px);
     font-size: clamp(26px, 10vw, 56px);
@@ -520,5 +510,51 @@ button.btn.copy-icon.copied-temp{
 @media (max-width: 420px) {
   .footer-inner > * { white-space: normal; text-align:center; }
 }
+
+/* ----------------------
+   TOAST (simple styles)
+   ---------------------- */
+.symbol-toast{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  bottom: calc(var(--footer-height) + 14px);
+  background: rgba(2,6,23,0.9);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  font-size: 0.95rem;
+  opacity: 0;
+  transition: transform .22s ease, opacity .22s ease;
+  z-index: 200;
+  pointer-events: none;
+}
+.symbol-toast.visible{
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.symbol-toast.toast-success{
+  border-color: rgba(110,231,183,0.12);
+}
+
+/* ----------------------
+   EMOJI / FLAG FALLBACK
+   ---------------------- */
+/* Force emoji fallback fonts for flag characters so color emoji render reliably */
+.char.flag,
+.modal-char.flag {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", "Poppins",
+               "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "EmojiOne Color", sans-serif;
+  /* Slightly larger size for flags so details are visible */
+  font-size: clamp(28px, 6.4vw, 64px);
+  letter-spacing: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Also ensure normal symbol chars keep original sizing */
+.char { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
 
 /* End of styles.css */
