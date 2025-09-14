@@ -149,7 +149,8 @@ const SYMBOLS = [
   {ch: "❂", name: "Sunburst", cat: "Decorative"},
 
   // Fallback generic
-  {ch: "?", name: "Unknown", cat: "Misc"}
+  {ch: "?", name: "Unknown", cat: "Misc"},
+  {ch: "‎ ", name: "Invisible Character", cat: "Misc"}
 ];
 
 // Compact country list (ISO alpha-2 + display name) — many countries included
@@ -678,3 +679,4 @@ function debounce(fn, ms){
 // Init
 renderCategories();
 filterAndRender();
+
