@@ -1,4 +1,5 @@
-// script.js — volledige versie met flag-generator, robust clipboard fallback, toast, and small scrollbar-space fallback
+// script.js — full file including flag-generator, clipboard fallback, toast,
+// scrollbar-space fallback, and a theme (dark/light) toggle with moon <-> sun icon.
 
 // Helper to build a flag emoji from an ISO 3166-1 alpha-2 country code
 function countryFlagEmoji(code){
@@ -7,6 +8,65 @@ function countryFlagEmoji(code){
   const chars = [...code.toUpperCase()].map(c => A + c.charCodeAt(0) - 65);
   return String.fromCodePoint(...chars);
 }
+
+// --- THEME (dark/light) TOGGLE --------------------------------------------------
+// SVG icon strings
+const ICONS = {
+  moon: `<svg class="theme-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+         </svg>`,
+  sun:  `<svg class="theme-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M6.76 4.84l-1.8-1.79L3.17 5.84l1.79 1.79 1.8-2.79zM1 13h3v-2H1v2zm10-9h2V1h-2v3zm7.03 1.05l1.8-1.79-1.79-1.79-1.8 1.79 1.79 1.79zM17 11v2h3v-2h-3zM12 7a5 5 0 100 10 5 5 0 000-10zm4.24 12.16l1.79 1.79 1.79-1.79-1.79-1.79-1.79 1.79zM6.76 19.16l-1.8 1.79L3.17 18.16l1.79-1.79 1.8 2.79zM11 23h2v-3h-2v3z"/>
+         </svg>`
+};
+
+// Toggle logic: use data-theme attribute on <html>, persist to localStorage
+const THEME_KEY = 'symbolica_theme';
+const themeToggleBtn = document.getElementById('theme-toggle');
+
+function applyTheme(theme) {
+  // theme: 'dark' or 'light'
+  const html = document.documentElement;
+  if (theme === 'light') {
+    html.setAttribute('data-theme', 'light');
+    themeToggleBtn.innerHTML = ICONS.sun;
+    themeToggleBtn.setAttribute('aria-label', 'Switch to dark mode');
+    themeToggleBtn.setAttribute('title', 'Switch to dark mode');
+    themeToggleBtn.setAttribute('aria-pressed', 'true');
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    themeToggleBtn.innerHTML = ICONS.moon;
+    themeToggleBtn.setAttribute('aria-label', 'Switch to light mode');
+    themeToggleBtn.setAttribute('title', 'Switch to light mode');
+    themeToggleBtn.setAttribute('aria-pressed', 'false');
+  }
+  try { localStorage.setItem(THEME_KEY, theme); } catch(e) { /* ignore */ }
+}
+
+// Initialize theme on load: prefer saved value, otherwise default to dark
+(function initTheme(){
+  const saved = (function(){
+    try { return localStorage.getItem(THEME_KEY); } catch(e) { return null; }
+  })();
+  if (saved === 'light' || saved === 'dark') {
+    applyTheme(saved);
+  } else {
+    // no saved theme -> default to dark (user requested moon to start)
+    applyTheme('dark');
+  }
+})();
+
+// Toggle handler
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  });
+}
+
+// --- END THEME ------------------------------------------------------------------
+
 
 // Core symbol dataset (your existing symbols)
 const SYMBOLS = [
@@ -137,7 +197,7 @@ const SYMBOLS = [
   {ch: "📎", name: "Paperclip", cat: "UI"},
   {ch: "📁", name: "Folder", cat: "UI"},
 
-  // Placeholder flags (will be replaced by generated flags)
+  // Fallback placeholder flags (will be replaced by generated flags)
   {ch: "🏳️", name: "White Flag", cat: "Flags"},
   {ch: "🏴", name: "Black Flag", cat: "Flags"},
   {ch: "🏁", name: "Chequered Flag", cat: "Flags"},
