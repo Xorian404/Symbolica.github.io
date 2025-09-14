@@ -1,9 +1,10 @@
-/* Complete styles.css (your original file with added emoji fallback for flags and scrollbar-gutter) */
+/* Complete styles.css (your original file with added emoji fallback for flags,
+   scrollbar-gutter and light/dark theme variables for the theme toggle) */
 
-/* Root variables */
+/* Root variables (dark defaults) */
 :root{
-  --bg-0: #041025;
-  --bg-1: #071229;
+  --bg-0: #041025;            /* page top background (dark) */
+  --bg-1: #071229;            /* page bottom background (dark) */
   --muted: #9fb0c8;
   --text: #e7f1fb;
   --accent-1: #06b6d4;
@@ -19,6 +20,19 @@
   --footer-height: clamp(48px, 7vh, 64px);
   --footer-gap: 28px;
   --scrollbar-space: 0px;
+}
+
+/* Light theme overrides */
+:root[data-theme="light"],
+html[data-theme="light"] {
+  --bg-0: #f6f8fb;
+  --bg-1: #ffffff;
+  --muted: #4b5563;         /* darker muted for light background */
+  --text: #071029;          /* near-black text */
+  --accent-1: #0ea5a4;      /* teal-ish */
+  --accent-2: #f59e0b;      /* amber-ish */
+  --shadow: 0 6px 18px rgba(10,10,12,0.06), inset 0 1px 0 rgba(0,0,0,0.02);
+  --success: #059669;
 }
 
 /* Base */
@@ -123,6 +137,41 @@ body{
   .logo::before { animation: none; }
 }
 
+/* Theme toggle button (in header) */
+.theme-toggle{
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .14s ease, color .14s ease, transform .12s ease;
+  flex: 0 0 auto;
+  margin-left: 12px;
+}
+.theme-toggle:hover{
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+}
+.theme-icon{
+  display: block;
+  width: 18px;
+  height: 18px;
+  transition: transform .25s ease;
+  transform-origin: center;
+}
+
+/* When in light mode, tweak header background to suit light theme */
+:root[data-theme="light"] .site-header{
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,250,0.95));
+  border-bottom-color: rgba(3,8,20,0.06);
+}
+
 /* Search */
 .search-wrap{ flex:1; max-width:640px; margin-left:12px; min-width:0; }
 input[type="search"]{
@@ -135,6 +184,11 @@ input[type="search"]{
   outline:none;
   transition: box-shadow .18s ease, transform .12s ease;
   font-size:0.95rem;
+}
+:root[data-theme="light"] input[type="search"]{
+  border-color: rgba(3,8,20,0.06);
+  background: rgba(2,6,23,0.02);
+  color: var(--text);
 }
 input[type="search"]::placeholder{ color: var(--muted); }
 input[type="search"]:focus{
@@ -161,6 +215,9 @@ input[type="search"]:focus{
   font-size:0.9rem;
   transition: all .12s ease;
   white-space:nowrap;
+}
+:root[data-theme="light"] .category-bar button{
+  border: 1px solid rgba(3,8,20,0.06);
 }
 .category-bar button:hover{ transform: translateY(-2px); color:var(--text); border-color: rgba(255,255,255,0.06) }
 .category-bar button.active{
@@ -194,8 +251,12 @@ input[type="search"]:focus{
   gap:8px;
   border:1px solid rgba(255,255,255,0.03);
   min-height: var(--card-min-height);
-  transition: transform .14s ease, box-shadow .14s ease;
+  transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
   box-shadow: var(--shadow);
+}
+:root[data-theme="light"] .card{
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01));
+  border:1px solid rgba(3,8,20,0.04);
 }
 .card:hover{
   transform: translateY(-6px);
@@ -211,6 +272,9 @@ input[type="search"]:focus{
   width:100%;
   color: var(--text);
   text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+:root[data-theme="light"] .char {
+  text-shadow: none;
 }
 
 /* Name text */
@@ -295,6 +359,10 @@ button.btn.copy-icon.copied-temp{
   justify-content: center;
   padding: calc(env(safe-area-inset-bottom, 0px) + 6px) 12px;
 }
+:root[data-theme="light"] .site-footer{
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,250,0.95));
+  border-top-color: rgba(3,8,20,0.06);
+}
 
 /* Footer inner container */
 .footer-inner{
@@ -349,6 +417,11 @@ button.btn.copy-icon.copied-temp{
   z-index: 61;
   box-shadow: 0 24px 48px rgba(2,6,23,0.6);
   -webkit-overflow-scrolling: touch;
+}
+:root[data-theme="light"] .modal-content{
+  background: linear-gradient(180deg,#ffffff,#fbfbfe);
+  border:1px solid rgba(3,8,20,0.04);
+  box-shadow: 0 10px 30px rgba(3,8,20,0.06);
 }
 
 /* Scrollable inner wrapper for very small/narrow viewports */
