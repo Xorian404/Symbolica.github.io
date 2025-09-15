@@ -1,35 +1,56 @@
 <!doctype html>
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Symbolica Online</title>
 
-  <link rel="icon" href="//myicon.ico" />
-  <link rel="shortcut icon" href="//myicon.ico" />
+  <!-- Favicon (zorg dat /myicon.ico in de site root staat) -->
+  <link rel="icon" href="/myicon.ico" type="image/x-icon" />
+  <link rel="shortcut icon" href="/myicon.ico" type="image/x-icon" />
+  <!-- Als het icoon gecached blijft kun je later ?v=1 toevoegen om te forceren:
+       <link rel="icon" href="/myicon.ico?v=1" type="image/x-icon" /> -->
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Poppins:wght@600&display=swap" rel="stylesheet">
 
+  <!-- Main stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header" role="banner">
     <div class="container header-inner">
-      <a class="logo" href="#" id="site-name" aria-label="Site: Symbolica Liquid">Symbolica</a>
+      <a class="logo" href="#" id="site-name" aria-label="Site: Symbolica Liquid">
+        <!-- Logo image (optional) — zet /myicon.ico in de root of verander pad -->
+        <span class="logo-text">Symbolica</span>
+      </a>
 
       <div class="search-wrap" aria-hidden="false">
         <label for="search" class="visually-hidden">Search symbols</label>
         <input id="search" type="search" placeholder="Search" autocomplete="off" />
       </div>
 
-      <!-- Theme toggle button (starts as moon icon for dark mode) -->
-      <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" title="Switch to light mode" aria-pressed="false">
-        <!-- Moon SVG - initial state is dark -->
-        <svg class="theme-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-        </svg>
-      </button>
+      <div class="header-actions" aria-hidden="false">
+        <!-- Theme toggle button (maantje -> zonne-icoon) -->
+        <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" title="Switch to light mode" aria-pressed="false">
+          <svg class="theme-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- Discord link next to the theme toggle (vervang href door jouw invite indien nodig) -->
+        <a id="discord-link"
+           class="discord-link"
+           href="https://discord.gg/Ket58Q7aPV"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="Open mijn Discord"
+           title="Join my Discord">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" class="social-icon">
+            <path fill="currentColor" d="M20.317 4.369a19.791 19.791 0 00-4.885-1.515.07.07 0 00-.075.035c-.211.375-.45.864-.617 1.249a18.806 18.806 0 00-5.457 0 12.72 12.72 0 00-.636-1.249.07.07 0 00-.075-.035c-1.68.3-3.33.841-4.885 1.515a.069.069 0 00-.033.024C1.867 9.02 1.12 13.456 1.657 17.79c0 .002.01.008.012.01a.082.082 0 00.03.057c2.052 1.51 4.042 2.437 5.992 3.03a.077.077 0 00.084-.027c.463-.63.874-1.29 1.226-1.98a.076.076 0 00-.041-.103c-.652-.247-1.27-.55-1.853-.892a.077.077 0 01-.007-.128c.125-.094.25-.192.37-.291a.074.074 0 01.077-.01c3.895 1.78 8.09 1.78 11.91 0a.073.073 0 01.078.009c.12.1.245.198.37.292.04.03.02.08-.006.128-.583.342-1.2.645-1.853.892a.076.076 0 00-.04.103c.36.69.77 1.35 1.226 1.98a.076.076 0 00.084.028c1.96-.593 3.95-1.52 6.002-3.03a.077.077 0 00.03-.057c.5-4.43-.26-8.86-2.93-13.397a.06.06 0 00-.032-.025zM8.02 15.331c-1.182 0-2.15-1.085-2.15-2.417 0-1.333.954-2.417 2.15-2.417 1.21 0 2.182 1.097 2.15 2.417 0 1.333-.94 2.417-2.15 2.417zm7.974 0c-1.182 0-2.15-1.085-2.15-2.417 0-1.333.954-2.417 2.15-2.417 1.21 0 2.182 1.097 2.15 2.417 0 1.333-.94 2.417-2.15 2.417z"/>
+          </svg>
+        </a>
+      </div>
     </div>
 
     <nav class="category-bar" id="categories" aria-label="Categories"></nav>
@@ -42,7 +63,7 @@
     </section>
 
     <section id="grid" class="grid" aria-live="polite" aria-label="Symbol results">
-      <!-- symbol cards injected here -->
+      <!-- symbol cards injected by script.js -->
     </section>
   </main>
 
@@ -52,15 +73,14 @@
     </div>
   </footer>
 
-  <!-- Back-to-top button (appears when scrolling) -->
+  <!-- Back-to-top button (verschijnt bij scroll) -->
   <button id="back-to-top" class="back-to-top" aria-label="Bring back to the top" title="Bring back to the top" aria-hidden="true">
-    <!-- Up arrow SVG (simple, accessible) -->
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
       <path fill="currentColor" d="M12 5.5l6 6-1.4 1.4L12 8.3 7.4 12.9 6 11.5z"/>
     </svg>
   </button>
 
-  <!-- modal for preview -->
+  <!-- Modal preview -->
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-overlay" role="presentation"></div>
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -71,10 +91,7 @@
           <h2 id="modal-title">Preview</h2>
           <p id="modal-name" class="modal-name"></p>
           <div class="modal-actions">
-            <!-- Copy icon (same style as card copy icon) -->
             <button id="modal-copy-icon" class="btn modal-icon" title="Copy" aria-label="Copy symbol"></button>
-
-            <!-- Download icon -->
             <button id="modal-download-icon" class="btn modal-icon" title="Download PNG" aria-label="Download PNG"></button>
           </div>
         </div>
@@ -82,7 +99,7 @@
     </div>
   </div>
 
+  <!-- main script (contains symbols list, theme toggle, back-to-top behavior, etc.) -->
   <script src="script.js" defer></script>
 </body>
 </html>
-
