@@ -1,760 +1,589 @@
-/* Complete styles.css (your original file with added emoji fallback for flags,
-   scrollbar-gutter, light/dark theme variables and back-to-top styles) */
+// script.js — full file including flag-generator, clipboard fallback, toast,
+// scrollbar-space fallback, theme toggle and back-to-top button.
 
-/* Root variables (dark defaults) */
-:root{
-  --bg-0: #041025;            /* page top background (dark) */
-  --bg-1: #071229;            /* page bottom background (dark) */
-  --muted: #9fb0c8;
-  --text: #e7f1fb;
-  --accent-1: #06b6d4;
-  --accent-2: #7c3aed;
-  --radius: 12px;
-  --gap: 12px;
-  --max-width: 1100px;
-  --card-min-height: 130px;
-  --shadow: 0 6px 18px rgba(3,8,20,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-  --success: #6ee7b7;
-
-  /* footer sizing + spacing between content and footer */
-  --footer-height: clamp(48px, 7vh, 64px);
-  --footer-gap: 28px;
-  --scrollbar-space: 0px;
+// Helper to build a flag emoji from an ISO 3166-1 alpha-2 country code
+function countryFlagEmoji(code){
+  if(!code || code.length !== 2) return '';
+  const A = 0x1F1E6;
+  const chars = [...code.toUpperCase()].map(c => A + c.charCodeAt(0) - 65);
+  return String.fromCodePoint(...chars);
 }
 
-/* Light theme overrides */
-:root[data-theme="light"],
-html[data-theme="light"] {
-  --bg-0: #f6f8fb;
-  --bg-1: #ffffff;
-  --muted: #4b5563;
-  --text: #071029;
-  --accent-1: #0ea5a4;
-  --accent-2: #f59e0b;
-  --shadow: 0 6px 18px rgba(10,10,12,0.06), inset 0 1px 0 rgba(0,0,0,0.02);
-  --success: #059669;
-}
+// --- THEME (dark/light) TOGGLE --------------------------------------------------
+// SVG icon strings
+const ICONS = {
+  moon: `<svg class="theme-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+         </svg>`,
+  sun:  `<svg class="theme-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M6.76 4.84l-1.8-1.79L3.17 5.84l1.79 1.79 1.8-2.79zM1 13h3v-2H1v2zm10-9h2V1h-2v3zm7.03 1.05l1.8-1.79-1.79-1.79-1.8 1.79 1.79 1.79zM17 11v2h3v-2h-3zM12 7a5 5 0 100 10 5 5 0 000-10zm4.24 12.16l1.79 1.79 1.79-1.79-1.79-1.79-1.79 1.79zM6.76 19.16l-1.8 1.79L3.17 18.16l1.79-1.79 1.8 2.79zM11 23h2v-3h-2v3z"/>
+         </svg>`
+};
 
-/* Base */
-/* Reserve gutter for scrollbar to prevent layout shift when page length changes */
-html {
-  scrollbar-gutter: stable;
-  overflow-y: scroll; /* fallback: reserve space for vertical scrollbar */
-}
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body{
-  margin:0;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
-  color: var(--text);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  line-height:1.4;
-  font-size: clamp(14px, 1.2vw + 10px, 16px);
-  -webkit-text-size-adjust:100%;
+// Toggle logic: use data-theme attribute on <html>, persist to localStorage
+const THEME_KEY = 'symbolica_theme';
+const themeToggleBtn = document.getElementById('theme-toggle');
 
-  /* ensure content never sits beneath footer */
-  padding-bottom: calc(var(--footer-height) + var(--footer-gap) + env(safe-area-inset-bottom, 0px));
-}
-
-/* Container */
-.container{ max-width: var(--max-width); margin:0 auto; padding:18px; }
-
-/* Main bottom padding so last row stays above footer */
-#main { padding-bottom: calc(var(--footer-height) + var(--footer-gap)); }
-
-/* Utility */
-.visually-hidden{
-  position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap;
-}
-
-/* Focus styles for keyboard users */
-:focus { outline: none; }
-:focus-visible {
-  outline: 3px solid rgba(6,182,212,0.14);
-  outline-offset: 3px;
-  border-radius: 8px;
-}
-
-/* Header */
-.site-header{
-  position: sticky;
-  top: 0;
-  background: linear-gradient(180deg, rgba(2,6,23,0.7), rgba(2,6,23,0.5));
-  backdrop-filter: blur(6px);
-  z-index: 20;
-  border-bottom: 1px solid rgba(255,255,255,0.02);
-  /* compensate for potential scrollbar-space if needed */
-  padding-right: var(--scrollbar-space, 0px);
-}
-.header-inner{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  justify-content:space-between;
-  padding:12px 0;
-}
-
-/* Logo */
-.logo{
-  font-family: Poppins, Inter, sans-serif;
-  font-weight:600;
-  font-size: clamp(1rem, 1.2vw + 0.2rem, 1.15rem);
-  color: var(--text);
-  text-decoration:none;
-  letter-spacing:0.3px;
-  position: relative;
-  padding:6px 10px;
-  border-radius:10px;
-  z-index:2;
-  overflow:visible;
-}
-.logo::before{
-  content: '';
-  position: absolute;
-  left: -20%;
-  top: -30%;
-  width: 160%;
-  height: 160%;
-  background: linear-gradient(90deg, rgba(6,182,212,0.12), rgba(124,58,237,0.12));
-  filter: blur(24px) saturate(1.0);
-  border-radius: 40%;
-  transform-origin: center;
-  opacity: 0.9;
-  z-index: -1;
-  animation: blob 7.2s ease-in-out infinite;
-  mix-blend-mode: screen;
-}
-@keyframes blob{
-  0% { transform: translate(0,0) scale(1); }
-  25% { transform: translate(6px,-6px) scale(1.03); }
-  50% { transform: translate(-6px,6px) scale(0.98); }
-  75% { transform: translate(4px,-4px) scale(1.02); }
-  100% { transform: translate(0,0) scale(1); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .logo::before { animation: none; }
-}
-
-/* Theme toggle button (in header) */
-.theme-toggle{
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background .14s ease, color .14s ease, transform .12s ease;
-  flex: 0 0 auto;
-  margin-left: 12px;
-}
-.theme-toggle:hover{
-  background: rgba(255,255,255,0.03);
-  color: var(--text);
-}
-.theme-icon{
-  display: block;
-  width: 18px;
-  height: 18px;
-  transition: transform .25s ease;
-  transform-origin: center;
-}
-
-/* When in light mode, tweak header background to suit light theme */
-:root[data-theme="light"] .site-header{
-  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,250,0.95));
-  border-bottom-color: rgba(3,8,20,0.06);
-}
-
-/* Search */
-.search-wrap{ flex:1; max-width:640px; margin-left:12px; min-width:0; }
-input[type="search"]{
-  width:100%;
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.04);
-  background: rgba(255,255,255,0.02);
-  color: var(--text);
-  outline:none;
-  transition: box-shadow .18s ease, transform .12s ease;
-  font-size:0.95rem;
-}
-:root[data-theme="light"] input[type="search"]{
-  border-color: rgba(3,8,20,0.06);
-  background: rgba(2,6,23,0.02);
-  color: var(--text);
-}
-input[type="search"]::placeholder{ color: var(--muted); }
-input[type="search"]:focus{
-  box-shadow: 0 6px 20px rgba(6,182,212,0.08);
-  transform: translateY(-1px);
-  border-color: rgba(6,182,212,0.18);
-}
-
-/* Category bar */
-.category-bar{
-  display:flex;
-  gap:10px;
-  padding:10px 18px;
-  overflow:auto;
-  -webkit-overflow-scrolling: touch;
-}
-.category-bar button{
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.035);
-  color: var(--muted);
-  padding:7px 10px;
-  border-radius:999px;
-  cursor:pointer;
-  font-size:0.9rem;
-  transition: all .12s ease;
-  white-space:nowrap;
-}
-:root[data-theme="light"] .category-bar button{
-  border: 1px solid rgba(3,8,20,0.06);
-}
-.category-bar button:hover{ transform: translateY(-2px); color:var(--text); border-color: rgba(255,255,255,0.06) }
-.category-bar button.active{
-  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-  color: #021018;
-  box-shadow: 0 6px 22px rgba(124,58,237,0.12);
-  border: none;
-  font-weight:600;
-}
-
-/* Controls */
-.controls{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; color:var(--muted); font-size:0.95rem; flex-wrap:wrap; }
-.help{ color:var(--muted); font-size:0.9rem; }
-
-/* Grid layout (compact) */
-.grid{
-  display:grid;
-  gap: var(--gap);
-  margin-top: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(clamp(120px, 16vw, 200px), 1fr));
-}
-
-/* Card */
-.card{
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius: calc(var(--radius) - 2px);
-  padding: 12px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:8px;
-  border:1px solid rgba(255,255,255,0.03);
-  min-height: var(--card-min-height);
-  transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
-  box-shadow: var(--shadow);
-}
-:root[data-theme="light"] .card{
-  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01));
-  border:1px solid rgba(3,8,20,0.04);
-}
-.card:hover{
-  transform: translateY(-6px);
-  box-shadow: 0 20px 36px rgba(2,6,23,0.6), 0 6px 14px rgba(0,0,0,0.35);
-}
-
-/* Symbol char in card */
-.char{
-  font-size: clamp(26px, 4.2vw, 48px);
-  height: auto;
-  min-height: 48px;
-  display:flex; align-items:center; justify-content:center;
-  width:100%;
-  color: var(--text);
-  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-}
-:root[data-theme="light"] .char {
-  text-shadow: none;
-}
-
-/* Name text */
-.name{
-  font-size: 0.95rem;
-  color: var(--muted);
-  text-align:center;
-  font-weight:600;
-  width:100%;
-  word-wrap:break-word;
-  margin-bottom: 4px;
-}
-
-/* Actions */
-.card .actions{
-  display:flex;
-  gap:8px;
-  margin-top:auto;
-  width:100%;
-  justify-content:center;
-  align-items:center;
-  padding-top:6px;
-}
-
-/* Buttons */
-button { font: inherit; -webkit-tap-highlight-color: transparent; }
-
-/* Preview button */
-button.btn.preview{
-  padding: 9px 14px;
-  border-radius:10px;
-  border:0;
-  cursor:pointer;
-  background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
-  color: #021018;
-  font-weight:700;
-  font-size:0.92rem;
-  box-shadow: 0 8px 20px rgba(6,182,212,0.08);
-  min-height:40px;
-}
-button.btn.preview:hover{ transform: translateY(-3px); }
-
-/* Copy icon button (card) */
-button.btn.copy-icon{
-  width:40px;
-  height:40px;
-  padding:6px;
-  border-radius:10px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background: rgba(255,255,255,0.045);
-  border:1px solid rgba(255,255,255,0.06);
-  color: var(--muted);
-  cursor:pointer;
-  transition: transform .12s ease, background .12s ease, color .12s ease;
-  flex: 0 0 auto;
-}
-button.btn.copy-icon:hover{ transform: translateY(-3px); background: rgba(255,255,255,0.06); color: var(--text); }
-button.btn.copy-icon svg{ width:18px; height:18px; display:block; }
-
-/* Copied temporary state */
-button.btn.copy-icon.copied-temp{
-  color: var(--success);
-  background: rgba(110,231,183,0.06);
-  border-color: rgba(110,231,183,0.12);
-}
-
-/* Footer fixed to bottom, full width */
-.site-footer{
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--footer-height);
-  z-index: 80;
-  background: linear-gradient(180deg, rgba(2,6,23,0.85), rgba(2,6,23,0.92));
-  border-top: 1px solid rgba(255,255,255,0.03);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(env(safe-area-inset-bottom, 0px) + 6px) 12px;
-}
-:root[data-theme="light"] .site-footer{
-  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,250,0.95));
-  border-top-color: rgba(3,8,20,0.06);
-}
-
-/* Footer inner container */
-.footer-inner{
-  max-width: var(--max-width);
-  width: 100%;
-  margin: 0 auto;
-  padding: 6px 18px;
-  color: var(--muted);
-  font-size: 0.95rem;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-/* ---------------------------
-   MODAL / PREVIEW (SMALLER)
-   --------------------------- */
-
-/* Modal container */
-.modal{
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 60;
-  padding: 18px;
-}
-.modal.show{ display:flex; }
-
-/* Backdrop */
-.modal-overlay{
-  position:absolute;
-  inset:0;
-  background: rgba(2,6,23,0.6);
-  backdrop-filter: blur(4px);
-}
-
-/* Modal content: cap width & height to be smaller on phones/large devices */
-.modal-content{
-  position: relative;
-  background: linear-gradient(180deg,#071229,#071226);
-  border-radius: 12px;
-  padding: 14px;
-  max-width: min(540px, calc(100% - 36px));
-  width: 100%;
-  max-height: calc(100vh - 72px);
-  overflow: hidden;
-  border:1px solid rgba(255,255,255,0.03);
-  z-index: 61;
-  box-shadow: 0 24px 48px rgba(2,6,23,0.6);
-  -webkit-overflow-scrolling: touch;
-}
-:root[data-theme="light"] .modal-content{
-  background: linear-gradient(180deg,#ffffff,#fbfbfe);
-  border:1px solid rgba(3,8,20,0.04);
-  box-shadow: 0 10px 30px rgba(3,8,20,0.06);
-}
-
-/* Scrollable inner wrapper for very small/narrow viewports */
-.modal-content .scroll-wrap{
-  overflow: auto;
-  max-height: calc(100vh - 120px);
-  padding-right: 6px;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Modal body: default row layout but will stack on small screens */
-.modal-body{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  justify-content:center;
-  flex-wrap:nowrap;
-}
-
-/* Preview square: much smaller upper limit and tighter clamping */
-.modal-char{
-  aspect-ratio: 1 / 1;
-  width: clamp(72px, 16vw, 140px);
-  min-width: 72px;
-  max-width: 160px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.02);
-  color: var(--text);
-  font-size: clamp(28px, 7.5vw, 64px);
-  line-height: 1;
-  padding: 8px;
-  flex: 0 0 auto;
-}
-
-/* Metadata column */
-.modal-meta{
-  flex: 1 1 200px;
-  min-width: 140px;
-  color: var(--text);
-  display:flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
-.modal-meta h2{
-  margin: 0;
-  font-size: clamp(1rem, 1.4vw, 1.25rem);
-}
-.modal-name{
-  color: var(--muted);
-  margin: 0;
-  font-size: 0.92rem;
-  word-break: break-word;
-  white-space: normal;
-}
-
-/* Modal actions (copy/download) */
-.modal-actions{
-  display:flex;
-  gap:10px;
-  margin-top:8px;
-  align-items:center;
-  justify-content:flex-start;
-  flex-wrap:wrap;
-}
-.btn.modal-icon{
-  width:44px;
-  height:44px;
-  padding:8px;
-  border-radius:12px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background: rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.03);
-  cursor:pointer;
-  transition: transform .12s ease, background .12s ease, color .12s ease;
-  color: var(--muted);
-}
-.btn.modal-icon:hover{ transform: translateY(-3px); background: rgba(255,255,255,0.04); color: var(--text); }
-.btn.modal-icon svg{ width:20px; height:20px; display:block; }
-.btn.modal-icon.success{ color: var(--success); background: rgba(110,231,183,0.06); border-color: rgba(110,231,183,0.12); }
-
-/* Close button */
-.modal-close{
-  position: absolute;
-  right: 10px;
-  top: 8px;
-  background: transparent;
-  border: 0;
-  color: var(--muted);
-  font-size: 1.1rem;
-  cursor: pointer;
-  z-index: 62;
-  padding: 6px;
-  border-radius: 8px;
-}
-.modal-close:focus-visible{ outline: 2px solid rgba(6,182,212,0.18); outline-offset: 3px; }
-
-/* Small screen modal adjustments (stacked layout) */
-@media (max-width: 520px) {
-  .modal-content{
-    max-width: calc(100% - 20px);
-    max-height: calc(100vh - 36px);
-    padding: 12px;
-    border-radius: 10px;
+function applyTheme(theme) {
+  const html = document.documentElement;
+  if (theme === 'light') {
+    html.setAttribute('data-theme', 'light');
+    if (themeToggleBtn) themeToggleBtn.innerHTML = ICONS.sun;
+    if (themeToggleBtn) themeToggleBtn.setAttribute('aria-label', 'Switch to dark mode');
+    if (themeToggleBtn) themeToggleBtn.setAttribute('title', 'Switch to dark mode');
+    if (themeToggleBtn) themeToggleBtn.setAttribute('aria-pressed', 'true');
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    if (themeToggleBtn) themeToggleBtn.innerHTML = ICONS.moon;
+    if (themeToggleBtn) themeToggleBtn.setAttribute('aria-label', 'Switch to light mode');
+    if (themeToggleBtn) themeToggleBtn.setAttribute('title', 'Switch to light mode');
+    if (themeToggleBtn) themeToggleBtn.setAttribute('aria-pressed', 'false');
   }
+  try { localStorage.setItem(THEME_KEY, theme); } catch(e) { /* ignore */ }
+}
 
-  .modal-body{
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-    justify-content: flex-start;
+(function initTheme(){
+  const saved = (function(){
+    try { return localStorage.getItem(THEME_KEY); } catch(e) { return null; }
+  })();
+  if (saved === 'light' || saved === 'dark') {
+    applyTheme(saved);
+  } else {
+    applyTheme('dark');
   }
+})();
 
-  .modal-meta{
-    align-items: center;
-    text-align: center;
-    width: 100%;
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  });
+}
+
+// --- END THEME ------------------------------------------------------------------
+
+
+// Core symbol dataset (your existing symbols)
+const SYMBOLS = [
+  // ... (same symbol list as before)
+  {ch: "❤", name: "Heart", cat: "Hearts"},
+  {ch: "💖", name: "Sparkling Heart", cat: "Hearts"},
+  {ch: "💘", name: "Heart with Arrow", cat: "Hearts"},
+  {ch: "❥", name: "Decorative Heart", cat: "Hearts"},
+  {ch: "💕", name: "Two Hearts", cat: "Hearts"},
+  {ch: "✔", name: "Check", cat: "Marks"},
+  {ch: "✖", name: "Cross", cat: "Marks"},
+  {ch: "✳", name: "Eight Spoked Asterisk", cat: "Marks"},
+  {ch: "✴", name: "Eight Pointed Star", cat: "Marks"},
+  {ch: "✱", name: "Star Asterisk", cat: "Marks"},
+  {ch: "★", name: "Star", cat: "Stars"},
+  {ch: "☆", name: "Outlined Star", cat: "Stars"},
+  {ch: "✦", name: "Small Star", cat: "Stars"},
+  {ch: "✶", name: "Spark Star", cat: "Stars"},
+  {ch: "🌟", name: "Glowing Star", cat: "Stars"},
+  {ch: "➤", name: "Arrow Right", cat: "Arrows"},
+  {ch: "➜", name: "Arrow Thick", cat: "Arrows"},
+  {ch: "⇨", name: "Double Arrow", cat: "Arrows"},
+  {ch: "←", name: "Left Arrow", cat: "Arrows"},
+  {ch: "⇄", name: "Swap Arrows", cat: "Arrows"},
+  {ch: "☀", name: "Sun", cat: "Nature"},
+  {ch: "☂", name: "Umbrella", cat: "Nature"},
+  {ch: "☘", name: "Shamrock", cat: "Nature"},
+  {ch: "🕊", name: "Dove", cat: "Nature"},
+  {ch: "🌿", name: "Leaf", cat: "Nature"},
+  {ch: "🌸", name: "Blossom", cat: "Nature"},
+  {ch: "🌙", name: "Crescent Moon", cat: "Nature"},
+  {ch: "🌊", name: "Wave", cat: "Nature"},
+  {ch: "☺", name: "Smiley", cat: "Faces"},
+  {ch: "☹", name: "Frowny", cat: "Faces"},
+  {ch: "😊", name: "Happy Face", cat: "Faces"},
+  {ch: "😎", name: "Sunglasses", cat: "Faces"},
+  {ch: "🤔", name: "Thinking", cat: "Faces"},
+  {ch: "⚑", name: "Flag", cat: "Misc"},
+  {ch: "✿", name: "Flower", cat: "Misc"},
+  {ch: "♫", name: "Music Note", cat: "Misc"},
+  {ch: "☮", name: "Peace", cat: "Misc"},
+  {ch: "🔒", name: "Lock", cat: "Misc"},
+  {ch: "₪", name: "Shekel", cat: "Currency"},
+  {ch: "€", name: "Euro", cat: "Currency"},
+  {ch: "¥", name: "Yen", cat: "Currency"},
+  {ch: "$", name: "Dollar", cat: "Currency"},
+  {ch: "£", name: "Pound", cat: "Currency"},
+  {ch: "☯", name: "Yin Yang", cat: "Symbols"},
+  {ch: "♻", name: "Recycle", cat: "Symbols"},
+  {ch: "⚡", name: "Lightning", cat: "Symbols"},
+  {ch: "∞", name: "Infinity", cat: "Symbols"},
+  {ch: "※", name: "Reference Mark", cat: "Symbols"},
+  {ch: "♈", name: "Aries", cat: "Zodiac"},
+  {ch: "♉", name: "Taurus", cat: "Zodiac"},
+  {ch: "♊", name: "Gemini", cat: "Zodiac"},
+  {ch: "♋", name: "Cancer", cat: "Zodiac"},
+  {ch: "♌", name: "Leo", cat: "Zodiac"},
+  {ch: "⇪", name: "Caps Lock", cat: "Tech"},
+  {ch: "⌘", name: "Command", cat: "Tech"},
+  {ch: "⌥", name: "Option", cat: "Tech"},
+  {ch: "⚙", name: "Gear", cat: "Tech"},
+  {ch: "⌫", name: "Backspace", cat: "Tech"},
+  {ch: "☁", name: "Cloud", cat: "Weather"},
+  {ch: "❄", name: "Snowflake", cat: "Weather"},
+  {ch: "🌩", name: "Thunder Cloud", cat: "Weather"},
+  {ch: "🌤", name: "Sun Behind Cloud", cat: "Weather"},
+  {ch: "■", name: "Black Square", cat: "Shapes"},
+  {ch: "□", name: "White Square", cat: "Shapes"},
+  {ch: "▲", name: "Black Triangle", cat: "Shapes"},
+  {ch: "●", name: "Black Circle", cat: "Shapes"},
+  {ch: "±", name: "Plus-Minus", cat: "Math"},
+  {ch: "≈", name: "Approximately", cat: "Math"},
+  {ch: "÷", name: "Division", cat: "Math"},
+  {ch: "×", name: "Multiplication", cat: "Math"},
+  {ch: "∑", name: "Summation", cat: "Math"},
+  {ch: "🍕", name: "Pizza", cat: "Food"},
+  {ch: "🍎", name: "Apple", cat: "Food"},
+  {ch: "☕", name: "Coffee", cat: "Food"},
+  {ch: "🍰", name: "Cake", cat: "Food"},
+  {ch: "🐶", name: "Dog", cat: "Animals"},
+  {ch: "🐱", name: "Cat", cat: "Animals"},
+  {ch: "🦊", name: "Fox", cat: "Animals"},
+  {ch: "🦁", name: "Lion", cat: "Animals"},
+  {ch: "✈", name: "Plane", cat: "Transport"},
+  {ch: "🚗", name: "Car", cat: "Transport"},
+  {ch: "⚓", name: "Anchor", cat: "Transport"},
+  {ch: "♪", name: "Eighth Note", cat: "Music"},
+  {ch: "♫", name: "Beamed Note", cat: "Music"},
+  {ch: "🎵", name: "Musical Note", cat: "Music"},
+  {ch: "🔍", name: "Search", cat: "UI"},
+  {ch: "🔔", name: "Bell", cat: "UI"},
+  {ch: "📎", name: "Paperclip", cat: "UI"},
+  {ch: "📁", name: "Folder", cat: "UI"},
+  {ch: "🏳️", name: "White Flag", cat: "Flags"},
+  {ch: "🏴", name: "Black Flag", cat: "Flags"},
+  {ch: "🏁", name: "Chequered Flag", cat: "Flags"},
+  {ch: "✧", name: "Star Outline", cat: "Decorative"},
+  {ch: "✽", name: "Floral Asterisk", cat: "Decorative"},
+  {ch: "❂", name: "Sunburst", cat: "Decorative"},
+  {ch: "?", name: "Unknown", cat: "Misc"},
+  {ch: "‎ ", name: "Invisible Character", cat: "Misc"}
+];
+
+// Compact country list omitted for brevity in this block (use your existing COUNTRY_DATA)
+const COUNTRY_DATA = [
+  {code:"AF", name:"Afghanistan"}, {code:"AL", name:"Albania"}, {code:"DZ", name:"Algeria"},
+  {code:"AS", name:"American Samoa"}, {code:"AD", name:"Andorra"}, {code:"AO", name:"Angola"},
+  {code:"AI", name:"Anguilla"}, {code:"AQ", name:"Antarctica"}, {code:"AG", name:"Antigua & Barbuda"},
+  {code:"AR", name:"Argentina"}, {code:"AM", name:"Armenia"}, {code:"AW", name:"Aruba"},
+  {code:"AU", name:"Australia"}, {code:"AT", name:"Austria"}, {code:"AZ", name:"Azerbaijan"},
+  {code:"BS", name:"Bahamas"}, {code:"BH", name:"Bahrain"}, {code:"BD", name:"Bangladesh"},
+  {code:"BB", name:"Barbados"}, {code:"BY", name:"Belarus"}, {code:"BE", name:"Belgium"},
+  {code:"BZ", name:"Belize"}, {code:"BJ", name:"Benin"}, {code:"BM", name:"Bermuda"},
+  {code:"BT", name:"Bhutan"}, {code:"BO", name:"Bolivia"}, {code:"BA", name:"Bosnia & Herzegovina"},
+  {code:"BW", name:"Botswana"}, {code:"BR", name:"Brazil"}, {code:"IO", name:"British Indian Ocean Territory"},
+  {code:"VG", name:"British Virgin Islands"}, {code:"BN", name:"Brunei"}, {code:"BG", name:"Bulgaria"},
+  {code:"BF", name:"Burkina Faso"}, {code:"BI", name:"Burundi"}, {code:"KH", name:"Cambodia"},
+  {code:"CM", name:"Cameroon"}, {code:"CA", name:"Canada"}, {code:"CV", name:"Cape Verde"},
+  {code:"KY", name:"Cayman Islands"}, {code:"CF", name:"Central African Republic"}, {code:"TD", name:"Chad"},
+  {code:"CL", name:"Chile"}, {code:"CN", name:"China"}, {code:"HK", name:"Hong Kong SAR"},
+  {code:"MO", name:"Macau SAR"}, {code:"CX", name:"Christmas Island"}, {code:"CC", name:"Cocos (Keeling) Islands"},
+  {code:"CO", name:"Colombia"}, {code:"KM", name:"Comoros"}, {code:"CG", name:"Congo - Brazzaville"},
+  {code:"CD", name:"Congo - Kinshasa"}, {code:"CK", name:"Cook Islands"}, {code:"CR", name:"Costa Rica"},
+  {code:"CI", name:"Côte d’Ivoire"}, {code:"HR", name:"Croatia"}, {code:"CU", name:"Cuba"},
+  {code:"CW", name:"Curaçao"}, {code:"CY", name:"Cyprus"}, {code:"CZ", name:"Czechia"},
+  {code:"DK", name:"Denmark"}, {code:"DJ", name:"Djibouti"}, {code:"DM", name:"Dominica"},
+  {code:"DO", name:"Dominican Republic"}, {code:"EC", name:"Ecuador"}, {code:"EG", name:"Egypt"},
+  {code:"SV", name:"El Salvador"}, {code:"GQ", name:"Equatorial Guinea"}, {code:"ER", name:"Eritrea"},
+  {code:"EE", name:"Estonia"}, {code:"SZ", name:"Eswatini"}, {code:"ET", name:"Ethiopia"},
+  {code:"FK", name:"Falkland Islands"}, {code:"FO", name:"Faroe Islands"}, {code:"FJ", name:"Fiji"},
+  {code:"FI", name:"Finland"}, {code:"FR", name:"France"}, {code:"GF", name:"French Guiana"},
+  {code:"PF", name:"French Polynesia"}, {code:"TF", name:"French Southern Territories"}, {code:"GA", name:"Gabon"},
+  {code:"GM", name:"Gambia"}, {code:"GE", name:"Georgia"}, {code:"DE", name:"Germany"},
+  {code:"GH", name:"Ghana"}, {code:"GI", name:"Gibraltar"}, {code:"GR", name:"Greece"},
+  {code:"GL", name:"Greenland"}, {code:"GD", name:"Grenada"}, {code:"GP", name:"Guadeloupe"},
+  {code:"GU", name:"Guam"}, {code:"GT", name:"Guatemala"}, {code:"GG", name:"Guernsey"},
+  {code:"GN", name:"Guinea"}, {code:"GW", name:"Guinea-Bissau"}, {code:"GY", name:"Guyana"},
+  {code:"HT", name:"Haiti"}, {code:"HN", name:"Honduras"}, {code:"HU", name:"Hungary"},
+  {code:"IS", name:"Iceland"}, {code:"IN", name:"India"}, {code:"ID", name:"Indonesia"},
+  {code:"IR", name:"Iran"}, {code:"IQ", name:"Iraq"}, {code:"IE", name:"Ireland"},
+  {code:"IM", name:"Isle of Man"}, {code:"IL", name:"Israel"}, {code:"IT", name:"Italy"},
+  {code:"JM", name:"Jamaica"}, {code:"JP", name:"Japan"}, {code:"JE", name:"Jersey"},
+  {code:"JO", name:"Jordan"}, {code:"KZ", name:"Kazakhstan"}, {code:"KE", name:"Kenya"},
+  {code:"KI", name:"Kiribati"}, {code:"KP", name:"North Korea"}, {code:"KR", name:"South Korea"},
+  {code:"KW", name:"Kuwait"}, {code:"KG", name:"Kyrgyzstan"}, {code:"LA", name:"Laos"},
+  {code:"LV", name:"Latvia"}, {code:"LB", name:"Lebanon"}, {code:"LS", name:"Lesotho"},
+  {code:"LR", name:"Liberia"}, {code:"LY", name:"Libya"}, {code:"LI", name:"Liechtenstein"},
+  {code:"LT", name:"Lithuania"}, {code:"LU", name:"Luxembourg"}, {code:"MG", name:"Madagascar"},
+  {code:"MW", name:"Malawi"}, {code:"MY", name:"Malaysia"}, {code:"MV", name:"Maldives"},
+  {code:"ML", name:"Mali"}, {code:"MT", name:"Malta"}, {code:"MH", name:"Marshall Islands"},
+  {code:"MQ", name:"Martinique"}, {code:"MR", name:"Mauritania"}, {code:"MU", name:"Mauritius"},
+  {code:"YT", name:"Mayotte"}, {code:"MX", name:"Mexico"}, {code:"FM", name:"Micronesia"},
+  {code:"MD", name:"Moldova"}, {code:"MC", name:"Monaco"}, {code:"MN", name:"Mongolia"},
+  {code:"ME", name:"Montenegro"}, {code:"MS", name:"Montserrat"}, {code:"MA", name:"Morocco"},
+  {code:"MZ", name:"Mozambique"}, {code:"MM", name:"Myanmar"}, {code:"NA", name:"Namibia"},
+  {code:"NR", name:"Nauru"}, {code:"NP", name:"Nepal"}, {code:"NL", name:"Netherlands"},
+  {code:"NC", name:"New Caledonia"}, {code:"NZ", name:"New Zealand"}, {code:"NI", name:"Nicaragua"},
+  {code:"NE", name:"Niger"}, {code:"NG", name:"Nigeria"}, {code:"NU", name:"Niue"},
+  {code:"NF", name:"Norfolk Island"}, {code:"MK", name:"North Macedonia"}, {code:"MP", name:"Northern Mariana Islands"},
+  {code:"NO", name:"Norway"}, {code:"OM", name:"Oman"}, {code:"PK", name:"Pakistan"},
+  {code:"PW", name:"Palau"}, {code:"PS", name:"Palestine"}, {code:"PA", name:"Panama"},
+  {code:"PG", name:"Papua New Guinea"}, {code:"PY", name:"Paraguay"}, {code:"PE", name:"Peru"},
+  {code:"PH", name:"Philippines"}, {code:"PN", name:"Pitcairn Islands"}, {code:"PL", name:"Poland"},
+  {code:"PT", name:"Portugal"}, {code:"PR", name:"Puerto Rico"}, {code:"QA", name:"Qatar"},
+  {code:"RE", name:"Réunion"}, {code:"RO", name:"Romania"}, {code:"RU", name:"Russia"},
+  {code:"RW", name:"Rwanda"}, {code:"BL", name:"Saint Barthélemy"}, {code:"SH", name:"Saint Helena"},
+  {code:"KN", name:"Saint Kitts & Nevis"}, {code:"LC", name:"Saint Lucia"}, {code:"MF", name:"Saint Martin (French)"},
+  {code:"PM", name:"Saint Pierre & Miquelon"}, {code:"VC", name:"Saint Vincent & the Grenadines"}, {code:"WS", name:"Samoa"},
+  {code:"SM", name:"San Marino"}, {code:"ST", name:"São Tomé & Príncipe"}, {code:"SA", name:"Saudi Arabia"},
+  {code:"SN", name:"Senegal"}, {code:"RS", name:"Serbia"}, {code:"SC", name:"Seychelles"},
+  {code:"SL", name:"Sierra Leone"}, {code:"SG", name:"Singapore"}, {code:"SX", name:"Sint Maarten"},
+  {code:"SK", name:"Slovakia"}, {code:"SI", name:"Slovenia"}, {code:"SB", name:"Solomon Islands"},
+  {code:"SO", name:"Somalia"}, {code:"ZA", name:"South Africa"}, {code:"SS", name:"South Sudan"},
+  {code:"ES", name:"Spain"}, {code:"LK", name:"Sri Lanka"}, {code:"SD", name:"Sudan"},
+  {code:"SR", name:"Suriname"}, {code:"SJ", name:"Svalbard & Jan Mayen"}, {code:"SE", name:"Sweden"},
+  {code:"CH", name:"Switzerland"}, {code:"SY", name:"Syria"}, {code:"TW", name:"Taiwan"},
+  {code:"TJ", name:"Tajikistan"}, {code:"TZ", name:"Tanzania"}, {code:"TH", name:"Thailand"},
+  {code:"TL", name:"Timor-Leste"}, {code:"TG", name:"Togo"}, {code:"TK", name:"Tokelau"},
+  {code:"TO", name:"Tonga"}, {code:"TT", name:"Trinidad & Tobago"}, {code:"TN", name:"Tunisia"},
+  {code:"TR", name:"Turkey"}, {code:"TM", name:"Turkmenistan"}, {code:"TC", name:"Turks & Caicos Islands"},
+  {code:"TV", name:"Tuvalu"}, {code:"UG", name:"Uganda"}, {code:"UA", name:"Ukraine"},
+  {code:"AE", name:"United Arab Emirates"}, {code:"GB", name:"United Kingdom"}, {code:"US", name:"United States"},
+  {code:"UM", name:"U.S. Minor Outlying Islands"}, {code:"UY", name:"Uruguay"}, {code:"UZ", name:"Uzbekistan"},
+  {code:"VU", name:"Vanuatu"}, {code:"VA", name:"Vatican City"}, {code:"VE", name:"Venezuela"},
+  {code:"VN", name:"Vietnam"}, {code:"VI", name:"U.S. Virgin Islands"}, {code:"WF", name:"Wallis & Futuna"},
+  {code:"EH", name:"Western Sahara"}, {code:"YE", name:"Yemen"}, {code:"ZM", name:"Zambia"},
+  {code:"ZW", name:"Zimbabwe"}
+];
+
+// Generate flag symbols and append to SYMBOLS (replace placeholders)
+(function appendFlags(){
+  const flags = COUNTRY_DATA.map(c => ({ ch: countryFlagEmoji(c.code), name: c.name, cat: "Flags" }));
+  for(let i = SYMBOLS.length - 1; i >= 0; i--){
+    if(SYMBOLS[i].cat === 'Flags' && /White Flag|Black Flag|Chequered Flag/.test(SYMBOLS[i].name)){
+      SYMBOLS.splice(i,1);
+    }
   }
+  flags.forEach(f => SYMBOLS.push(f));
+})();
 
-  .modal-actions{
-    justify-content: center;
-    width: 100%;
+// DOM elements
+const grid = document.getElementById('grid');
+const search = document.getElementById('search');
+const categoriesEl = document.getElementById('categories');
+const countsEl = document.getElementById('counts');
+
+const modal = document.getElementById('modal');
+const modalChar = document.getElementById('modal-char');
+const modalName = document.getElementById('modal-name');
+const modalTitle = document.getElementById('modal-title');
+const modalClose = document.getElementById('modal-close');
+const modalCopyIcon = document.getElementById('modal-copy-icon');
+const modalDownloadIcon = document.getElementById('modal-download-icon');
+
+const backToTopBtn = document.getElementById('back-to-top');
+
+let activeCategory = null;
+let currentList = SYMBOLS.slice();
+let modalCurrent = null;
+
+// Helpers
+function uniqueCategories(list){
+  return Array.from(new Set(list.map(i=>i.cat))).sort();
+}
+
+function renderCategories(){
+  const cats = uniqueCategories(SYMBOLS);
+  categoriesEl.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.textContent = 'All';
+  allBtn.classList.add('active');
+  allBtn.addEventListener('click', ()=>{ activeCategory=null; updateActiveCategory(); filterAndRender(); });
+  categoriesEl.appendChild(allBtn);
+
+  cats.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.textContent = cat;
+    btn.addEventListener('click', ()=>{ activeCategory = cat; updateActiveCategory(); filterAndRender(); });
+    categoriesEl.appendChild(btn);
+  });
+}
+
+function updateActiveCategory(){
+  Array.from(categoriesEl.children).forEach(btn=>{
+    btn.classList.toggle('active', btn.textContent === (activeCategory || 'All'));
+  });
+}
+
+// SVG icon helpers
+function copyIconSVG(){
+  return `
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <rect x="9" y="4" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"></rect>
+    <rect x="4" y="8" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"></rect>
+  </svg>`;
+}
+function checkIconSVG(){
+  return `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+function downloadIconSVG(){
+  return `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M12 3v12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M20 21H4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+// Toast feedback (simple)
+function showToast(message, success = true, timeout = 1400){
+  let existing = document.querySelector('.symbol-toast');
+  if(existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'symbol-toast' + (success ? ' toast-success' : '');
+  t.textContent = message;
+  document.body.appendChild(t);
+  setTimeout(()=> t.classList.add('visible'), 10);
+  setTimeout(()=> { t.classList.remove('visible'); setTimeout(()=> t.remove(), 260); }, timeout);
+}
+
+// Robust clipboard write (modern API + fallback)
+async function writeTextToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    }catch(err){
+      // fallthrough to legacy fallback
+    }
   }
-
-  .modal-char{
-    width: clamp(72px, 28vw, 120px);
-    font-size: clamp(26px, 10vw, 56px);
-    padding: 6px;
-  }
-
-  .modal-close{
-    right: 8px;
-    top: 8px;
+  try{
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    textarea.style.left = '-9999px';
+    textarea.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return successful;
+  }catch(e){
+    return false;
   }
 }
 
-/* Very short viewports: keep modal visible above footer */
-@media (max-height: 640px) {
-  .modal-content{ max-height: calc(100vh - (var(--footer-height) + 48px)); }
+// Card rendering
+function renderCard(item){
+  const card = document.createElement('div');
+  card.className = 'card';
+  const ch = document.createElement('div');
+  ch.className = 'char';
+  ch.textContent = item.ch;
+  if(item.cat === 'Flags') ch.classList.add('flag');
+
+  const nm = document.createElement('div'); nm.className='name'; nm.textContent = item.name;
+  const actions = document.createElement('div'); actions.className='actions';
+
+  const previewBtn = document.createElement('button');
+  previewBtn.className = 'btn preview';
+  previewBtn.textContent = 'Preview';
+  previewBtn.setAttribute('aria-label', `Preview ${item.name}`);
+  previewBtn.addEventListener('click', ()=> openModal(item));
+
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'btn copy-icon';
+  copyBtn.setAttribute('aria-label', `Copy ${item.name}`);
+  copyBtn.innerHTML = copyIconSVG();
+  copyBtn.addEventListener('click', (e)=> { e.stopPropagation(); copyIconSymbol(item.ch, copyBtn); });
+
+  actions.appendChild(previewBtn);
+  actions.appendChild(copyBtn);
+
+  card.appendChild(ch); card.appendChild(nm); card.appendChild(actions);
+  return card;
 }
 
-/* Large screens tweaks */
-@media (min-width: 1024px){
-  .grid{ grid-template-columns: repeat(auto-fit, minmax(clamp(140px, 13.5vw, 200px), 1fr)); }
-  .container{ padding:20px 28px; }
+function renderGrid(list){
+  grid.innerHTML = '';
+  if(list.length === 0){
+    grid.innerHTML = `<p style="color:var(--muted)">No results found.</p>`;
+    countsEl.textContent = '0 symbols';
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  list.forEach(item => frag.appendChild(renderCard(item)));
+  grid.appendChild(frag);
+  countsEl.textContent = `${list.length} ${list.length === 1 ? 'symbol' : 'symbols'}`;
 }
 
-/* Reduced motion for users who prefer it */
-@media (prefers-reduced-motion: reduce){
-  * { transition: none !important; animation: none !important; }
+// Filtering
+function filterAndRender(){
+  const q = search.value.trim().toLowerCase();
+  currentList = SYMBOLS.filter(s=>{
+    const matchesCat = activeCategory ? s.cat === activeCategory : true;
+    const matchesQuery = q === '' || s.name.toLowerCase().includes(q) || s.ch.includes(q);
+    return matchesCat && matchesQuery;
+  });
+  renderGrid(currentList);
 }
 
-/* High contrast tweak */
-@media (prefers-contrast: more) {
-  .category-bar button { border-color: rgba(255,255,255,0.12); color: var(--text); }
-  .card { border-color: rgba(255,255,255,0.08); }
-  .site-footer { border-top-color: rgba(255,255,255,0.08); }
-}
-
-/* Footer wrapping on very narrow devices */
-.footer-inner > * { white-space: nowrap; }
-@media (max-width: 420px) {
-  .footer-inner > * { white-space: normal; text-align:center; }
-}
-
-/* ----------------------
-   TOAST (simple styles)
-   ---------------------- */
-.symbol-toast{
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  bottom: calc(var(--footer-height) + 14px);
-  background: rgba(2,6,23,0.9);
-  color: var(--text);
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
-  font-size: 0.95rem;
-  opacity: 0;
-  transition: transform .22s ease, opacity .22s ease;
-  z-index: 200;
-  pointer-events: none;
-}
-.symbol-toast.visible{
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-.symbol-toast.toast-success{
-  border-color: rgba(110,231,183,0.12);
-}
-
-/* ----------------------
-   BACK-TO-TOP BUTTON
-   ---------------------- */
-.back-to-top{
-  position: fixed;
-  right: 18px;
-  bottom: calc(var(--footer-height) + 18px); /* sits above the footer */
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-  color: #021018;
-  border: none;
-  box-shadow: 0 8px 22px rgba(2,6,23,0.35);
-  cursor: pointer;
-  transform: translateY(8px) scale(0.98);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .22s ease, transform .22s cubic-bezier(.2,.9,.3,1), box-shadow .12s ease;
-  z-index: 120;
-}
-.back-to-top svg { width: 18px; height: 18px; display:block; }
-.back-to-top:hover { transform: translateY(0) scale(1); box-shadow: 0 12px 30px rgba(2,6,23,0.42); }
-
-/* visible state */
-.back-to-top.visible{
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-}
-
-/* focus styles */
-.back-to-top:focus-visible{
-  outline: 3px solid rgba(6,182,212,0.16);
-  outline-offset: 4px;
-  border-radius: 50%;
-}
-
-/* Respect light theme */
-:root[data-theme="light"] .back-to-top{
-  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-  color: #021018;
-  box-shadow: 0 8px 20px rgba(3,8,20,0.08);
-}
-
-/* mobile adjust (avoid safe area overlap) */
-@media (max-width: 520px){
-  .back-to-top {
-    right: 14px;
-    bottom: calc(var(--footer-height) + 12px);
-    width: 42px;
-    height: 42px;
+// Copy icon action
+async function copyIconSymbol(text, btn){
+  const ok = await writeTextToClipboard(text);
+  if(ok){
+    const old = btn.innerHTML;
+    btn.innerHTML = checkIconSVG();
+    btn.classList.add('copied-temp');
+    showToast('Copied to clipboard', true);
+    setTimeout(()=> {
+      btn.innerHTML = old;
+      btn.classList.remove('copied-temp');
+    }, 900);
+  }else{
+    showToast('Copy failed — try manual copying', false);
   }
 }
 
-/* ----------------------
-   EMOJI / FLAG FALLBACK
-   ---------------------- */
-/* Force emoji fallback fonts for flag characters so color emoji render reliably */
-.char.flag,
-.modal-char.flag {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", "Poppins",
-               "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "EmojiOne Color", sans-serif;
-  font-size: clamp(28px, 6.4vw, 64px);
-  letter-spacing: normal;
-  line-height: 1;
-  -webkit-font-smoothing: antialiased;
-}
+/* Modal preview & download */
+function openModal(item){
+  modalCurrent = item;
+  modalChar.textContent = item.ch;
+  if(modalChar && item.cat === 'Flags') modalChar.classList.add('flag'); else if(modalChar) modalChar.classList.remove('flag');
 
-/* Also ensure normal symbol chars keep original sizing */
-.char { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  modalName.textContent = item.name + ' - ' + item.cat;
+  modalTitle.textContent = item.name;
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
 
-/* container for header small actions (theme toggle + discord icon) */
-.header-actions{
-  display:inline-flex;
-  gap:8px;
-  align-items:center;
-  margin-left: 12px;
-}
+  const scrollWrap = modal.querySelector('.scroll-wrap');
+  if(scrollWrap) scrollWrap.scrollTop = 0;
 
-/* Discord link styling */
-.discord-link{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:40px;
-  height:40px;
-  padding:6px;
-  border-radius:10px;
-  color: #7289da; /* Discord brand-ish color */
-  background: transparent;
-  text-decoration: none;
-  transition: background .14s ease, transform .12s ease, color .12s ease;
-  flex: 0 0 auto;
-}
-.discord-link:hover{
-  background: rgba(114,137,218,0.08);
-  color: #5865F2;
-  transform: translateY(-2px);
-}
-.discord-link:active{ transform: translateY(0); }
-.discord-link:focus-visible{
-  outline: 3px solid rgba(88,101,242,0.18);
-  outline-offset: 3px;
-  border-radius: 10px;
-}
-
-/* Make the inline svg icon inherit color */
-.discord-link .social-icon{
-  width:18px;
-  height:18px;
-  display:block;
-  color: currentColor;
-  fill: currentColor;
-}
-
-/* Respect light theme (tweak color to keep contrast) */
-:root[data-theme="light"] .discord-link{
-  color: #4f5bd5;
-}
-:root[data-theme="light"] .discord-link:hover{
-  background: rgba(79,91,213,0.08);
-  color: #3b3fbf;
-}
-
-/* Small screens: slightly smaller */
-@media (max-width: 420px){
-  .discord-link, .theme-toggle {
-    width: 36px;
-    height: 36px;
+  if(modalCopyIcon){
+    modalCopyIcon.innerHTML = copyIconSVG();
+    modalCopyIcon.classList.remove('success');
   }
-  .discord-link .social-icon, .theme-icon { width:16px; height:16px; }
+  if(modalDownloadIcon){
+    modalDownloadIcon.innerHTML = downloadIconSVG();
+  }
+  modalClose.focus();
 }
 
-/* End of styles.css */
+function closeModal(){
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+  modalCurrent = null;
+}
+
+modalClose.addEventListener('click', closeModal);
+modal.addEventListener('click', (e)=>{ if(e.target === modal || e.target.classList.contains('modal-overlay')) closeModal(); });
+
+async function modalCopyAction(){
+  if(!modalCurrent) return;
+  const ok = await writeTextToClipboard(modalCurrent.ch);
+  if(ok){
+    modalCopyIcon.innerHTML = checkIconSVG();
+    modalCopyIcon.classList.add('success');
+    showToast('Copied to clipboard', true);
+    setTimeout(()=> {
+      modalCopyIcon.innerHTML = copyIconSVG();
+      modalCopyIcon.classList.remove('success');
+    }, 1100);
+  }else{
+    showToast('Copy failed — try manual copying', false);
+  }
+}
+
+function modalDownloadAction(){
+  if(!modalCurrent) return;
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#071229';
+  ctx.fillRect(0,0,size,size);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `${size * 0.6}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(modalCurrent.ch, size/2, size/2);
+  const link = document.createElement('a');
+  link.download = `${modalCurrent.name.replace(/\s+/g,'_')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+if(modalCopyIcon) modalCopyIcon.addEventListener('click', modalCopyAction);
+if(modalDownloadIcon) modalDownloadIcon.addEventListener('click', modalDownloadAction);
+
+// Search interactions & keyboard
+search.addEventListener('input', debounce(filterAndRender, 180));
+document.addEventListener('keydown', (e)=> { if(e.key === 'Escape') closeModal(); });
+
+// debounce
+function debounce(fn, ms){
+  let t;
+  return (...args)=>{ clearTimeout(t); t = setTimeout(()=> fn(...args), ms); }
+}
+
+/* Back-to-top button behaviour */
+// Throttle using requestAnimationFrame for smooth performance
+(function backToTopBehaviour(){
+  if(!backToTopBtn) return;
+  const SHOW_AFTER = 260; // px scrolled before showing
+  let ticking = false;
+
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(()=> {
+      const y = window.scrollY || window.pageYOffset;
+      if(y > SHOW_AFTER){
+        backToTopBtn.classList.add('visible');
+        backToTopBtn.setAttribute('aria-hidden','false');
+      }else{
+        backToTopBtn.classList.remove('visible');
+        backToTopBtn.setAttribute('aria-hidden','true');
+      }
+      ticking = false;
+    });
+  }
+
+  // click scroll to top (smooth)
+  backToTopBtn.addEventListener('click', (e)=> {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // provide focus feedback for keyboard users
+    backToTopBtn.blur();
+  });
+
+  // keyboard accessibility (Enter / Space)
+  backToTopBtn.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      backToTopBtn.click();
+    }
+  });
+
+  // initial check (in case page loads scrolled or very short)
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+})();
+
+// Optional JS fallback: measure scrollbar width and expose as CSS var
+(function preserveScrollbarSpace(){
+  function getScrollbarWidth(){
+    return window.innerWidth - document.documentElement.clientWidth;
+  }
+  function applyScrollSpace(){
+    const w = getScrollbarWidth();
+    document.documentElement.style.setProperty('--scrollbar-space', (w > 0 ? w + 'px' : '0px'));
+  }
+  window.addEventListener('resize', applyScrollSpace);
+  applyScrollSpace();
+})();
+
+// Init
+renderCategories();
+filterAndRender();
