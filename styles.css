@@ -302,18 +302,23 @@ input[type="search"]:focus{
 /* Buttons */
 button { font: inherit; -webkit-tap-highlight-color: transparent; }
 
-/* Preview button */
+/* Preview button — vertical spacing preserved, horizontal spacing reduced */
 button.btn.preview{
-  padding: 9px 14px;
+  /* keep vertical padding same as original so top/bottom distance is unchanged */
+  padding: 9px 10px;     /* vertical 9px (unchanged), horizontal reduced from 14px -> 10px */
   border-radius:10px;
   border:0;
   cursor:pointer;
   background: linear-gradient(90deg,var(--accent-1),var(--accent-2));
   color: #021018;
-  font-weight:700;
+  font-weight:600;
   font-size:0.92rem;
   box-shadow: 0 8px 20px rgba(6,182,212,0.08);
-  min-height:40px;
+  min-height:40px;       /* ensure button height matches original */
+  line-height:1;
+  display:inline-flex;   /* keeps text vertically centered */
+  align-items:center;
+  justify-content:center;
 }
 button.btn.preview:hover{ transform: translateY(-3px); }
 
@@ -694,5 +699,77 @@ button.btn.copy-icon.copied-temp{
 
 /* Also ensure normal symbol chars keep original sizing */
 .char { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+/* container for header small actions (theme toggle + discord icon) */
+.header-actions{
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+  margin-left: 12px;
+}
+
+/* Discord link styling */
+.discord-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  padding:6px;
+  border-radius:10px;
+  color: #7289da; /* Discord brand-ish color */
+  background: transparent;
+  text-decoration: none;
+  transition: background .14s ease, transform .12s ease, color .12s ease;
+  flex: 0 0 auto;
+}
+.discord-link:hover{
+  background: rgba(114,137,218,0.08);
+  color: #5865F2;
+  transform: translateY(-2px);
+}
+.discord-link:active{ transform: translateY(0); }
+.discord-link:focus-visible{
+  outline: 3px solid rgba(88,101,242,0.18);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+/* Make the inline svg icon inherit color */
+.discord-link .social-icon{
+  width:18px;
+  height:18px;
+  display:block;
+  color: currentColor;
+  fill: currentColor;
+}
+
+/* Respect light theme (tweak color to keep contrast) */
+:root[data-theme="light"] .discord-link{
+  color: #4f5bd5;
+}
+:root[data-theme="light"] .discord-link:hover{
+  background: rgba(79,91,213,0.08);
+  color: #3b3fbf;
+}
+
+/* Small screens: slightly smaller */
+@media (max-width: 420px){
+  .discord-link, .theme-toggle {
+    width: 36px;
+    height: 36px;
+  }
+  .discord-link .social-icon, .theme-icon { width:16px; height:16px; }
+}
+
+/* Hide Preview button when width ≤320px OR height ≤600px */
+@media (max-width: 320px), (max-height: 600px) {
+  .card .btn.preview,
+  button.btn.preview {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
 
 /* End of styles.css */
